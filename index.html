@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Cloud Cost Calculator</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<link rel="stylesheet" href="css/style.css"/>
+</head>
+<body>
+<div class="bg-grid"></div>
+<div class="bg-glow1"></div>
+<div class="bg-glow2"></div>
+
+<div class="wrap">
+
+  <!-- ===== HERO SECTION ===== -->
+  <div class="hero">
+    <div class="hero-badge">Live Cost Estimation &bull; INR &#8377;</div>
+    <h1>Cloud Cost <span>Calculator</span></h1>
+    <p>Estimate your monthly cloud infrastructure costs across compute, storage, and data transfer &mdash; in Indian Rupees.</p>
+    <div class="toggle-wrap">
+      <button class="toggle-btn active" id="btn-monthly" onclick="setPeriod('monthly')">Monthly</button>
+      <button class="toggle-btn" id="btn-yearly" onclick="setPeriod('yearly')">Yearly</button>
+    </div>
+  </div>
+
+  <!-- ===== CALCULATOR CARDS ===== -->
+  <div class="grid-main">
+
+    <!-- COMPUTE CARD -->
+    <div class="card compute">
+      <div class="card-accent"></div>
+      <div class="card-icon">&#128421;</div>
+      <h2>Compute</h2>
+      <p class="subtitle">Virtual machine instances</p>
+
+      <div class="field">
+        <label>Instance Type</label>
+        <div class="select-wrap">
+          <select id="instanceType" onchange="calc()">
+            <option value="1.67">Basic &mdash; &#8377;1.67/hr</option>
+            <option value="4.17" selected>Standard &mdash; &#8377;4.17/hr</option>
+            <option value="8.34">High Performance &mdash; &#8377;8.34/hr</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>vCPU Cores <span class="badge" id="cpu-badge">4 cores</span></label>
+        <div class="slider-row">
+          <input type="range" min="1" max="64" value="4" step="1" id="cpu"
+            oninput="updateSlider(this,'cpu-badge', v=>v+' cores'); calc()"/>
+          <span class="slider-val" id="cpu-val">4</span>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>RAM (GB) <span class="badge" id="ram-badge">16 GB</span></label>
+        <div class="slider-row">
+          <input type="range" min="1" max="512" value="16" step="1" id="ram"
+            oninput="updateSlider(this,'ram-badge', v=>v+' GB'); calc()"/>
+          <span class="slider-val" id="ram-val">16</span>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Hours/Month <span class="badge" id="hours-badge">730 hrs</span></label>
+        <div class="slider-row">
+          <input type="range" min="1" max="744" value="730" step="1" id="hours"
+            oninput="updateSlider(this,'hours-badge', v=>v+' hrs'); calc()"/>
+          <span class="slider-val" id="hours-val">730</span>
+        </div>
+        <div class="info-tip">&#128161; 730 hrs = full month (24&times;7)</div>
+      </div>
+    </div>
+
+    <!-- STORAGE CARD -->
+    <div class="card storage">
+      <div class="card-accent"></div>
+      <div class="card-icon">&#128190;</div>
+      <h2>Storage</h2>
+      <p class="subtitle">Block &amp; object storage</p>
+
+      <div class="field">
+        <label>Storage Type</label>
+        <div class="select-wrap">
+          <select id="storageType" onchange="calc()">
+            <option value="0.84">HDD &mdash; &#8377;0.84/GB</option>
+            <option value="1.67" selected>SSD &mdash; &#8377;1.67/GB</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Storage Size (GB) <span class="badge" id="storage-badge">500 GB</span></label>
+        <div class="slider-row">
+          <input type="range" min="1" max="10000" value="500" step="1" id="storageSize"
+            oninput="updateSlider(this,'storage-badge', v=>v>=1000?(v/1000).toFixed(1)+'TB':v+' GB'); calc()"/>
+          <span class="slider-val" id="storageSize-val">500</span>
+        </div>
+      </div>
+
+      <div class="field ref-field">
+        <label>Pricing Reference</label>
+        <div class="pricing-ref">
+          <div class="pricing-ref-row"><span>HDD</span><span>&#8377;0.84 / GB</span></div>
+          <div class="pricing-ref-row"><span>SSD</span><span>&#8377;1.67 / GB</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- DATA TRANSFER CARD -->
+    <div class="card transfer">
+      <div class="card-accent"></div>
+      <div class="card-icon">&#127758;</div>
+      <h2>Data Transfer</h2>
+      <p class="subtitle">Outbound network traffic</p>
+
+      <div class="field">
+        <label>Region / Destination</label>
+        <div class="select-wrap">
+          <select id="region" onchange="calc()">
+            <option value="6.68">US / EU &mdash; &#8377;6.68/GB</option>
+            <option value="10.01">Asia Pacific &mdash; &#8377;10.01/GB</option>
+            <option value="13.35">South America &mdash; &#8377;13.35/GB</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Data OUT (GB) <span class="badge" id="transfer-badge">100 GB</span></label>
+        <div class="slider-row">
+          <input type="range" min="0" max="5000" value="100" step="1" id="dataTransfer"
+            oninput="updateSlider(this,'transfer-badge', v=>v>=1000?(v/1000).toFixed(1)+'TB':v+' GB'); calc()"/>
+          <span class="slider-val" id="dataTransfer-val">100</span>
+        </div>
+      </div>
+
+      <div class="field ref-field">
+        <label>Pricing Reference</label>
+        <div class="pricing-ref">
+          <div class="pricing-ref-row"><span>US / EU</span><span>&#8377;6.68 / GB</span></div>
+          <div class="pricing-ref-row"><span>Asia Pacific</span><span>&#8377;10.01 / GB</span></div>
+          <div class="pricing-ref-row"><span>South America</span><span>&#8377;13.35 / GB</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== RESULTS SECTION ===== -->
+  <div class="result-row">
+
+    <!-- Total Cost Card -->
+    <div class="total-card">
+      <div class="total-label" id="total-label">Estimated Monthly Cost</div>
+      <div class="total-amount" id="total-display">&#8377;0</div>
+      <div class="total-period" id="total-period">per month</div>
+      <div class="breakdown-list">
+        <div class="breakdown-item">
+          <div class="breakdown-name">
+            <div class="breakdown-dot" style="background:#f5c800"></div>Compute
+          </div>
+          <div class="breakdown-val">
+            <span id="compute-cost">&#8377;0</span>
+            <span class="breakdown-pct" id="compute-pct">(0%)</span>
+          </div>
+        </div>
+        <div class="breakdown-item">
+          <div class="breakdown-name">
+            <div class="breakdown-dot" style="background:#aaaaaa"></div>Storage
+          </div>
+          <div class="breakdown-val">
+            <span id="storage-cost">&#8377;0</span>
+            <span class="breakdown-pct" id="storage-pct">(0%)</span>
+          </div>
+        </div>
+        <div class="breakdown-item">
+          <div class="breakdown-name">
+            <div class="breakdown-dot" style="background:#555555"></div>Data Transfer
+          </div>
+          <div class="breakdown-val">
+            <span id="transfer-cost">&#8377;0</span>
+            <span class="breakdown-pct" id="transfer-pct">(0%)</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Pie Chart Card -->
+    <div class="chart-card">
+      <h3>Cost Breakdown</h3>
+      <div style="position:relative;height:220px;">
+        <canvas id="pieChart"></canvas>
+      </div>
+      <div class="chart-legend">
+        <div class="legend-item">
+          <div class="legend-sq" style="background:#f5c800;border:1px solid #ddd"></div>Compute
+        </div>
+        <div class="legend-item">
+          <div class="legend-sq" style="background:#aaaaaa"></div>Storage
+        </div>
+        <div class="legend-item">
+          <div class="legend-sq" style="background:#444444"></div>Transfer
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider"/>
+
+  <!-- ===== PROVIDER COMPARISON ===== -->
+  <div class="compare-section">
+    <div class="section-title">Provider Comparison</div>
+    <div class="compare-grid">
+
+      <div class="compare-card aws">
+        <div class="compare-name">Amazon Web Services</div>
+        <div class="compare-price aws" id="aws-price">&#8377;0</div>
+        <div class="compare-tag cheapest" id="aws-tag">Cheapest</div>
+        <div class="compare-rows">
+          <div class="compare-row"><span>Compute</span><span id="aws-compute">&#8377;0</span></div>
+          <div class="compare-row"><span>Storage</span><span id="aws-storage">&#8377;0</span></div>
+          <div class="compare-row"><span>Transfer</span><span id="aws-transfer">&#8377;0</span></div>
+        </div>
+      </div>
+
+      <div class="compare-card azure">
+        <div class="compare-name">Microsoft Azure</div>
+        <div class="compare-price azure" id="azure-price">&#8377;0</div>
+        <div class="compare-tag popular" id="azure-tag">Most Popular</div>
+        <div class="compare-rows">
+          <div class="compare-row"><span>Compute</span><span id="azure-compute">&#8377;0</span></div>
+          <div class="compare-row"><span>Storage</span><span id="azure-storage">&#8377;0</span></div>
+          <div class="compare-row"><span>Transfer</span><span id="azure-transfer">&#8377;0</span></div>
+        </div>
+      </div>
+
+      <div class="compare-card gcp">
+        <div class="compare-name">Google Cloud Platform</div>
+        <div class="compare-price gcp" id="gcp-price">&#8377;0</div>
+        <div class="compare-tag premium" id="gcp-tag">Premium</div>
+        <div class="compare-rows">
+          <div class="compare-row"><span>Compute</span><span id="gcp-compute">&#8377;0</span></div>
+          <div class="compare-row"><span>Storage</span><span id="gcp-storage">&#8377;0</span></div>
+          <div class="compare-row"><span>Transfer</span><span id="gcp-transfer">&#8377;0</span></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <hr class="divider"/>
+
+  <!-- ===== BAR CHART ===== -->
+  <div class="chart-card" style="margin-bottom:24px;">
+    <h3>Provider Cost Comparison</h3>
+    <div style="position:relative;height:240px;">
+      <canvas id="barChart"></canvas>
+    </div>
+  </div>
+
+  <!-- ===== SAVE ESTIMATES ===== -->
+  <div>
+    <div class="section-title">Saved Estimates</div>
+    <div class="save-bar">
+      <button class="btn btn-primary" onclick="saveEstimate()">&#128190; Save Current Estimate</button>
+      <button class="btn btn-outline" onclick="clearSaved()">&#128465; Clear All</button>
+    </div>
+    <div class="saved-list" id="saved-list">
+      <div class="no-saves">No estimates saved yet. Configure your infrastructure and save!</div>
+    </div>
+  </div>
+
+</div><!-- end .wrap -->
+
+<div class="toast" id="toast"></div>
+
+<script src="js/app.js"></script>
+</body>
+</html>
